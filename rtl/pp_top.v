@@ -339,6 +339,7 @@ module pp_top (
     wire  [P_IB_DATA_WIDTH-1:0] w_wr_rdata1;
     // 3D graphics - system controller
     wire           w_vtx_int;
+    wire           w_vtx_dma;
     // 3D graphics vertex fetsh
     wire           w_req_dma;
     wire  [P_IB_ADDR_WIDTH-1:0] w_adrs_dma;
@@ -971,22 +972,32 @@ fm_hvc u_hvc (
     .i_rstr(w_r_rstr2),
     .i_rd(w_r_rdata2),
     // video out
+`ifdef PP_USE_HDMI
 `ifdef PP_HDMI_TEST
     .clk_vo(),
 `else
     .clk_vo(clk_vo),
 `endif
-    .o_r_neg(o_vr),
-    .o_g_neg(o_vg),
-    .o_b_neg(o_vb),
-    .o_vsync_x_neg(o_vsync_x),
-    .o_hsync_x_neg(o_hsync_x),
     .o_r(w_vr),
     .o_g(w_vg),
     .o_b(w_vb),
     .o_vsync_x(w_vsync_x),
     .o_hsync_x(w_hsync_x),
-    .o_blank_x(w_vde)
+    .o_blank_x(w_vde),
+`else // PP_USE_HDMI
+    .clk_vo(),
+    .o_r(),
+    .o_g(),
+    .o_b(),
+    .o_vsync_x(),
+    .o_hsync_x(),
+    .o_blank_x(),
+`endif // PP_USE_HDMI
+    .o_r_neg(o_vr),
+    .o_g_neg(o_vg),
+    .o_b_neg(o_vb),
+    .o_vsync_x_neg(o_vsync_x),
+    .o_hsync_x_neg(o_hsync_x)
 );
 
 // HDMI

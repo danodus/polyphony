@@ -315,6 +315,7 @@ localparam P_BUCKET_SIZE     = 'd32;
     wire           w_hit3;
     wire           w_hit4;
     wire           w_hit5;
+    wire           w_hit6;
     wire           w_hit8;
     wire           w_hit9;
     wire           w_hitA;
