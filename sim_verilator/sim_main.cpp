@@ -12,6 +12,12 @@
 // Include model header, generated from Verilating "top.v"
 #include "Vtop.h"
 
+#include "utils.h"
+#include "axi_slave_mem.h"
+#include "axi_master.h"
+
+#define PP_BASE_ADDR 0x0
+
 const int screen_width = 1024;
 const int screen_height = 768;
 
@@ -19,9 +25,114 @@ const int screen_height = 768;
 const int vga_width = 800;
 const int vga_height = 525;
 
+axi_slave_mem g_axi_slave_mem{};
+axi_master g_axi_master{};
+
 double sc_time_stamp()
 {
     return 0.0;
+}
+
+void reset(const std::unique_ptr<Vtop>& top)
+{
+    top->rst_x = 0;
+    for (int i = 0; i < 10; ++i)
+        pulse_clk(top);
+    top->rst_x = 1;
+    pulse_clk(top);
+}
+
+void memory_clear(const std::unique_ptr<Vtop>& top)
+{
+    g_axi_slave_mem.memory_clear(top);
+}
+
+void register_setup(const std::unique_ptr<Vtop>& top)
+{
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0004, 0xf, 0x00000000);      // frame0 offset
+    
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0008, 0xf, 0x00010000);      // frame1 offset
+//        g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000002);      // color mode
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000000);      // color mode
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0028, 0xf, 0x00000001);      // int mask
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0200, 0xf, 0x00000000);      // 3d register
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0284, 0xf, 0x00000000);      // color offset
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x028c, 0xf, 0x00400000);      // depth offset
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x02ac, 0xf, 0x00000001);      // depth test en, LESS
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0204, 0xf, 0x00000001);      // cache clear
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0280, 0xf, 0x00000001);      // screen flip
+}
+
+void to_float32(uint32_t *ret, float32_t v)
+{
+    union {
+        float32_t f;
+        uint32_t u;
+    } _uf;
+
+    _uf.f = v;
+    *ret = _uf.u;
+}
+
+void set_triangle2(const std::unique_ptr<Vtop>& top)
+{
+  uint32_t r_f32;
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x02b4, 0xf, 0x00003001);      // attribute
+    // vertex0 (top)
+    to_float32(&r_f32,95);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0340, 0xf, r_f32);  // x
+    to_float32(&r_f32,235);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0344, 0xf, r_f32);  // y
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0348, 0xf, r_f32);  // z
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x034c, 0xf, r_f32);  // iw
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0350, 0xf, r_f32);  // cr
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0354, 0xf, r_f32);  // cg
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0358, 0xf, r_f32);  // cb
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x035c, 0xf, r_f32);  // ca
+    // vertex1 (middle)
+    to_float32(&r_f32,220);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0380, 0xf, r_f32);  // x
+    to_float32(&r_f32,125);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0384, 0xf, r_f32);  // y
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0388, 0xf, r_f32);  // z
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x038c, 0xf, r_f32);  // iw
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0390, 0xf, r_f32);  // cr
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0394, 0xf, r_f32);  // cg
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0398, 0xf, r_f32);  // cb
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x039c, 0xf, r_f32);  // ca
+    to_float32(&r_f32,1.0);
+    // vertex2 (bottom)
+    to_float32(&r_f32,100);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03c0, 0xf, r_f32);  // x
+    to_float32(&r_f32,105);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03c4, 0xf, r_f32);  // y
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03c8, 0xf, r_f32);  // z
+    to_float32(&r_f32,1.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03cc, 0xf, r_f32);  // iw
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d0, 0xf, r_f32);  // cr
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d4, 0xf, r_f32);  // cb
+    to_float32(&r_f32,0.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d8, 0xf, r_f32);  // cg
+    to_float32(&r_f32,1.0*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03dc, 0xf, r_f32);  // ca
+    to_float32(&r_f32,1.0);
+    // render start
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0200, 0xf, 1);
 }
 
 int main(int argc, char **argv, char **env)
@@ -81,10 +192,6 @@ int main(int argc, char **argv, char **env)
         // "TOP" will be the hierarchical name of the module.
         const std::unique_ptr<Vtop> top{new Vtop{contextp.get(), "TOP"}};
 
-        // Set Vtop's input signals
-        top->reset_i = 1;
-        top->clk = 0;
-
         SDL_Event e;
         bool quit = false;
 
@@ -100,52 +207,41 @@ int main(int argc, char **argv, char **env)
 
         top->clk = 0;
 
+        // ----------
+
+        reset(top);
+        memory_clear(top);
+        register_setup(top);
+        set_triangle2(top);
+
+        // ----------
+
+
         while (!contextp->gotFinish() && !quit)
         {
-            //if (contextp->time() > 100000)
-            //    quit = true;
                 
-            top->clk = !top->clk;
+            // Update video display
+            if (was_vsync && top->o_vsync_x)
+            {
+                pixel_index = 0;
+                was_vsync = false;
+            }
 
-            contextp->timeInc(1);
-            top->eval();
+            pixels[pixel_index] = top->o_vr << 4;
+            pixels[pixel_index + 1] = top->o_vg << 4;
+            pixels[pixel_index + 2] = top->o_vb << 4;
+            pixels[pixel_index + 3] = 255;
+            pixel_index = (pixel_index + 4) % (pixels_size);
 
-            // if posedge clk
-            if (top->clk) {
-                
-                if (contextp->time() > 1 && contextp->time() < 10)
-                {
-                    top->reset_i = 1; // Assert reset
-                }
-                else
-                {
-                    top->reset_i = 0; // Deassert reset
-                }
-
-
-                // Update video display
-                if (was_vsync && top->vga_vsync)
-                {
-                    pixel_index = 0;
-                    was_vsync = false;
-                }
-
-                pixels[pixel_index] = top->vga_r << 4;
-                pixels[pixel_index + 1] = top->vga_g << 4;
-                pixels[pixel_index + 2] = top->vga_b << 4;
-                pixels[pixel_index + 3] = 255;
-                pixel_index = (pixel_index + 4) % (pixels_size);
-
-                if (!top->vga_vsync && !was_vsync)
-                {
-                    was_vsync = true;
-                    void *p;
-                    int pitch;
-                    SDL_LockTexture(texture, NULL, &p, &pitch);
-                    assert(pitch == vga_width * 4);
-                    memcpy(p, pixels, vga_width * vga_height * 4);
-                    SDL_UnlockTexture(texture);
-                }
+            if (!top->o_vsync_x && !was_vsync)
+            {
+                was_vsync = true;
+                void *p;
+                int pitch;
+                SDL_LockTexture(texture, NULL, &p, &pitch);
+                assert(pitch == vga_width * 4);
+                memcpy(p, pixels, vga_width * vga_height * 4);
+                SDL_UnlockTexture(texture);
             }
 
             tp_now = std::chrono::high_resolution_clock::now();
@@ -216,6 +312,8 @@ int main(int argc, char **argv, char **env)
 
                 SDL_RenderPresent(renderer);
             }
+
+            pulse_clk(top);
 
         }
 
