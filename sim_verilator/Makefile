@@ -4,8 +4,8 @@ LDFLAGS := -LDFLAGS "$(shell sdl2-config --libs)"
 CFLAGS := -CFLAGS "$(shell sdl2-config --cflags) -g"
 
 RTLDIR := ../rtl
-SRC := sim_main.cpp utils.cpp axi_slave_mem.cpp axi_master.cpp
-HDR := utils.h axi_slave_mem.h axi_master.h
+SRC := sim_main.cpp utils.cpp axi_master.cpp
+HDR := utils.h axi_master.h
 
 all: sim
 

@@ -46,45 +46,6 @@ module top(
     output logic o_rlast_s,
     output logic o_rvalid_s,
     input wire logic i_rready_s,
-    // AXI Master
-    output logic [P_AXI_M_AWID-1:0] o_awid_m,
-    output logic [P_AXI_M_AWADDR-1:0] o_awaddr_m,
-    output logic [P_AXI_M_AWLEN-1:0] o_awlen_m,
-    output logic [P_AXI_M_AWSIZE-1:0] o_awsize_m,
-    output logic [P_AXI_M_AWBURST-1:0] o_awburst_m,
-    output logic [P_AXI_M_AWLOCK-1:0] o_awlock_m,
-    output logic [P_AXI_M_AWCACHE-1:0] o_awcache_m,
-    output logic [P_AXI_M_AWUSER-1:0] o_awuser_m,
-    output logic [P_AXI_M_AWPROT-1:0] o_awprot_m,
-    output logic o_awvalid_m,
-    input wire logic i_awready_m,
-    output logic [P_AXI_M_WID-1:0] o_wid_m,
-    output logic [P_AXI_M_WDATA-1:0] o_wdata_m,
-    output logic [P_AXI_M_WSTRB-1:0] o_wstrb_m,
-    output logic o_wlast_m,
-    output logic o_wvalid_m,
-    input wire logic i_wready_m,
-    input wire logic [P_AXI_M_BID-1:0] i_bid_m,
-    input wire logic [P_AXI_M_BRESP-1:0] i_bresp_m,
-    input wire logic i_bvalid_m,
-    output logic o_bready_m,
-    output logic [P_AXI_M_ARID-1:0] o_arid_m,
-    output logic [P_AXI_M_ARADDR-1:0] o_araddr_m,
-    output logic [P_AXI_M_ARLEN-1:0] o_arlen_m,
-    output logic [P_AXI_M_ARSIZE-1:0] o_arsize_m,
-    output logic [P_AXI_M_ARBURST-1:0] o_arburst_m,
-    output logic [P_AXI_M_ARLOCK-1:0] o_arlock_m,
-    output logic [P_AXI_M_ARCACHE-1:0] o_arcache_m,
-    output logic [P_AXI_M_ARUSER-1:0] o_aruser_m,
-    output logic [P_AXI_M_ARPROT-1:0] o_arprot_m,
-    output logic o_arvalid_m,
-    input logic i_arready_m,
-    input wire logic [P_AXI_M_RID-1:0] i_rid_m,
-    input wire logic [P_AXI_M_RDATA-1:0] i_rdata_m,
-    input wire logic [P_AXI_M_RRESP-1:0] i_rresp_m,
-    input wire logic i_rlast_m,
-    input wire logic i_rvalid_m,
-    output logic o_rready_m,
     // Video out
     input wire logic clk_v,
     output logic o_blank_x,
@@ -94,6 +55,45 @@ module top(
     output logic [7:0] o_vg,
     output logic [7:0] o_vb
 );
+
+    // AXI Master Write Channel Signals
+    wire [P_AXI_M_AWID-1:0] w_awid_m;
+    wire [P_AXI_M_AWADDR-1:0] w_awaddr_m;
+    wire [P_AXI_M_AWLEN-1:0] w_awlen_m;
+    wire [P_AXI_M_AWSIZE-1:0] w_awsize_m;
+    wire [P_AXI_M_AWBURST-1:0] w_awburst_m;
+    wire [P_AXI_M_AWLOCK-1:0] w_awlock_m;
+    wire [P_AXI_M_AWCACHE-1:0] w_awcache_m;
+    wire [P_AXI_M_AWPROT-1:0] w_awprot_m;
+    wire w_awvalid_m;
+    wire w_awready_m;
+    wire [P_AXI_M_WID-1:0] w_wid_m;
+    wire [P_AXI_M_WDATA-1:0] w_wdata_m;
+    wire [P_AXI_M_WSTRB-1:0] w_wstrb_m;
+    wire w_wlast_m;
+    wire w_wvalid_m;
+    wire w_wready_m;
+    wire [P_AXI_M_BID-1:0] w_bid_m;
+    wire [P_AXI_M_BRESP-1:0] w_bresp_m;
+    wire w_bvalid_m;
+    wire w_bready_m;
+    // AXI Master Read Channel Signals
+    wire [P_AXI_M_ARID-1:0] w_arid_m;
+    wire [P_AXI_M_ARADDR-1:0] w_araddr_m;
+    wire [P_AXI_M_ARLEN-1:0] w_arlen_m;
+    wire [P_AXI_M_ARSIZE-1:0] w_arsize_m;
+    wire [P_AXI_M_ARBURST-1:0] w_arburst_m;
+    wire [P_AXI_M_ARLOCK-1:0] w_arlock_m;
+    wire [P_AXI_M_ARCACHE-1:0] w_arcache_m;
+    wire [P_AXI_M_ARPROT-1:0] w_arprot_m;
+    wire w_arvalid_m;
+    wire w_arready_m;
+    wire [P_AXI_M_RID-1:0] w_rid_m;
+    wire [P_AXI_M_RDATA-1:0] w_rdata_m;
+    wire [P_AXI_M_RRESP-1:0] w_rresp_m;
+    wire w_rlast_m;
+    wire w_rvalid_m;
+    wire w_rready_m;
 
     pp_top pp_top (
         // system
@@ -140,45 +140,46 @@ module top(
         .o_rlast_s,
         .o_rvalid_s,
         .i_rready_s,
-        // AXI Master
-        .o_awid_m,
-        .o_awaddr_m,
-        .o_awlen_m,
-        .o_awsize_m,
-        .o_awburst_m,
-        .o_awlock_m,
-        .o_awcache_m,
-        .o_awuser_m,
-        .o_awprot_m,
-        .o_awvalid_m,
-        .i_awready_m,
-        .o_wid_m,
-        .o_wdata_m,
-        .o_wstrb_m,
-        .o_wlast_m,
-        .o_wvalid_m,
-        .i_wready_m,
-        .i_bid_m,
-        .i_bresp_m,
-        .i_bvalid_m,
-        .o_bready_m,
-        .o_arid_m,
-        .o_araddr_m,
-        .o_arlen_m,
-        .o_arsize_m,
-        .o_arburst_m,
-        .o_arlock_m,
-        .o_arcache_m,
-        .o_aruser_m,
-        .o_arprot_m,
-        .o_arvalid_m,
-        .i_arready_m,
-        .i_rid_m,
-        .i_rdata_m,
-        .i_rresp_m,
-        .i_rlast_m,
-        .i_rvalid_m,
-        .o_rready_m,
+        // AXI Master Write
+        .o_awid_m(w_awid_m),
+        .o_awaddr_m(w_awaddr_m),
+        .o_awlen_m(w_awlen_m),
+        .o_awsize_m(w_awsize_m),
+        .o_awburst_m(w_awburst_m),
+        .o_awlock_m(w_awlock_m),
+        .o_awcache_m(w_awcache_m),
+        .o_awuser_m(),
+        .o_awprot_m(w_awprot_m),
+        .o_awvalid_m(w_awvalid_m),
+        .i_awready_m(w_awready_m),
+        .o_wid_m(w_wid_m),
+        .o_wdata_m(w_wdata_m),
+        .o_wstrb_m(w_wstrb_m),
+        .o_wlast_m(w_wlast_m),
+        .o_wvalid_m(w_wvalid_m),
+        .i_wready_m(w_wready_m),
+        .i_bid_m(w_bid_m),
+        .i_bresp_m(w_bresp_m),
+        .i_bvalid_m(w_bvalid_m),
+        .o_bready_m(w_bready_m),
+        // AXI Master Read
+        .o_arid_m(w_arid_m),
+        .o_araddr_m(w_araddr_m),
+        .o_arlen_m(w_arlen_m),
+        .o_arsize_m(w_arsize_m),
+        .o_arburst_m(w_arburst_m),
+        .o_arlock_m(w_arlock_m),
+        .o_arcache_m(w_arcache_m),
+        .o_aruser_m(),
+        .o_arprot_m(w_arprot_m),
+        .o_arvalid_m(w_arvalid_m),
+        .i_arready_m(w_arready_m),
+        .i_rid_m(w_rid_m),
+        .i_rdata_m(w_rdata_m),
+        .i_rresp_m(w_rresp_m),
+        .i_rlast_m(w_rlast_m),
+        .i_rvalid_m(w_rvalid_m),
+        .o_rready_m(w_rready_m),
         // Video out
         .clk_v(clk),
         .o_blank_x,
@@ -189,11 +190,55 @@ module top(
         .o_vb
     );
 
-/*
+    axi_slave_mem axi_slave_mem (
+        .clk_core(clk),
+        .rst_x(rst_x),
+        // AXI
+        //   write channel
+        .i_awid(w_awid_m),
+        .i_awaddr(w_awaddr_m),
+        .i_awlen(w_awlen_m),
+        .i_awsize(w_awsize_m),
+        .i_awburst(w_awburst_m),
+        .i_awlock(w_awlock_m),
+        .i_awcache(w_awcache_m),
+        .i_awprot(w_awprot_m),
+        .i_awvalid(w_awvalid_m),
+        .o_awready(w_awready_m),
+        .i_wid(w_wid_m),
+        .i_wdata(w_wdata_m),
+        .i_wstrb(w_wstrb_m),
+        .i_wlast(w_wlast_m),
+        .i_wvalid(w_wvalid_m),
+        .o_wready(w_wready_m),
+        .o_bid(w_bid_m),
+        .i_bresp(w_bresp_m),
+        .o_bvalid(w_bvalid_m),
+        .i_bready(w_bready_m),
+        //   read channel
+        .i_arid(w_arid_m),
+        .i_araddr(w_araddr_m),
+        .i_arlen(w_arlen_m),
+        .i_arsize(w_arsize_m),
+        .i_arburst(w_arburst_m),
+        .i_arlock(w_arlock_m),
+        .i_arcache(w_arcache_m),
+        .i_arprot(w_arprot_m),
+        .i_arvalid(w_arvalid_m),
+        .o_arready(w_arready_m),
+        .o_rid(w_rid_m),
+        .o_rdata(w_rdata_m),
+        .o_rresp(w_rresp_m),
+        .o_rlast(w_rlast_m),
+        .o_rvalid(w_rvalid_m),
+        .i_rready(w_rready_m)
+    );
+
     initial begin
-        $display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
-        $dumpfile("logs/vlt_dump.vcd");
-        $dumpvars();
+        axi_slave_mem.memory_clear();
+        //$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
+        //$dumpfile("logs/vlt_dump.vcd");
+        //$dumpvars();
     end
-*/
+
 endmodule

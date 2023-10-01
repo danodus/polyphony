@@ -13,7 +13,6 @@
 #include "Vtop.h"
 
 #include "utils.h"
-#include "axi_slave_mem.h"
 #include "axi_master.h"
 
 #define PP_BASE_ADDR 0x0
@@ -25,7 +24,6 @@ const int screen_height = 768;
 const int vga_width = 800;
 const int vga_height = 525;
 
-axi_slave_mem g_axi_slave_mem{};
 axi_master g_axi_master{};
 
 double sc_time_stamp()
@@ -42,18 +40,14 @@ void reset(const std::unique_ptr<Vtop>& top)
     pulse_clk(top);
 }
 
-void memory_clear(const std::unique_ptr<Vtop>& top)
-{
-    g_axi_slave_mem.memory_clear(top);
-}
-
 void register_setup(const std::unique_ptr<Vtop>& top)
 {
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0000, 0xf, 0x00000003);      // video start
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0004, 0xf, 0x00000000);      // frame0 offset
     
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0008, 0xf, 0x00010000);      // frame1 offset
-//        g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000002);      // color mode
-    g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000000);      // color mode
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000002);      // color mode
+    //g_axi_master.single_write(top, PP_BASE_ADDR+0x0014, 0xf, 0x00000000);      // color mode
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0028, 0xf, 0x00000001);      // int mask
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0200, 0xf, 0x00000000);      // 3d register
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0284, 0xf, 0x00000000);      // color offset
@@ -74,60 +68,63 @@ void to_float32(uint32_t *ret, float32_t v)
     *ret = _uf.u;
 }
 
-void set_triangle2(const std::unique_ptr<Vtop>& top)
+void draw_triangle(const std::unique_ptr<Vtop>& top,
+    float x0, float y0, float r0, float g0, float b0,
+    float x1, float y1, float r1, float g1, float b1,
+    float x2, float y2, float r2, float g2, float b2)
 {
   uint32_t r_f32;
     g_axi_master.single_write(top, PP_BASE_ADDR+0x02b4, 0xf, 0x00003001);      // attribute
     // vertex0 (top)
-    to_float32(&r_f32,95);
+    to_float32(&r_f32, x0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0340, 0xf, r_f32);  // x
-    to_float32(&r_f32,235);
+    to_float32(&r_f32, y0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0344, 0xf, r_f32);  // y
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0348, 0xf, r_f32);  // z
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x034c, 0xf, r_f32);  // iw
-    to_float32(&r_f32,0.0*255.0);
+    to_float32(&r_f32,r0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0350, 0xf, r_f32);  // cr
-    to_float32(&r_f32,1.0*255.0);
+    to_float32(&r_f32,g0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0354, 0xf, r_f32);  // cg
-    to_float32(&r_f32,0.0*255.0);
+    to_float32(&r_f32,b0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0358, 0xf, r_f32);  // cb
     to_float32(&r_f32,1.0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x035c, 0xf, r_f32);  // ca
     // vertex1 (middle)
-    to_float32(&r_f32,220);
+    to_float32(&r_f32,x1);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0380, 0xf, r_f32);  // x
-    to_float32(&r_f32,125);
+    to_float32(&r_f32,y1);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0384, 0xf, r_f32);  // y
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0388, 0xf, r_f32);  // z
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x038c, 0xf, r_f32);  // iw
-    to_float32(&r_f32,0.0*255.0);
+    to_float32(&r_f32,r1*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0390, 0xf, r_f32);  // cr
-    to_float32(&r_f32,0.0*255.0);
+    to_float32(&r_f32,g1*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0394, 0xf, r_f32);  // cg
-    to_float32(&r_f32,1.0*255.0);
+    to_float32(&r_f32,b1*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x0398, 0xf, r_f32);  // cb
     to_float32(&r_f32,1.0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x039c, 0xf, r_f32);  // ca
     to_float32(&r_f32,1.0);
     // vertex2 (bottom)
-    to_float32(&r_f32,100);
+    to_float32(&r_f32,x2);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03c0, 0xf, r_f32);  // x
-    to_float32(&r_f32,105);
+    to_float32(&r_f32,y2);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03c4, 0xf, r_f32);  // y
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03c8, 0xf, r_f32);  // z
     to_float32(&r_f32,1.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03cc, 0xf, r_f32);  // iw
-    to_float32(&r_f32,1.0*255.0);
+    to_float32(&r_f32,r2*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03d0, 0xf, r_f32);  // cr
-    to_float32(&r_f32,0.0*255.0);
-    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d4, 0xf, r_f32);  // cb
-    to_float32(&r_f32,0.0*255.0);
-    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d8, 0xf, r_f32);  // cg
+    to_float32(&r_f32,g2*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d4, 0xf, r_f32);  // cg
+    to_float32(&r_f32,b2*255.0);
+    g_axi_master.single_write(top, PP_BASE_ADDR+0x03d8, 0xf, r_f32);  // cb
     to_float32(&r_f32,1.0*255.0);
     g_axi_master.single_write(top, PP_BASE_ADDR+0x03dc, 0xf, r_f32);  // ca
     to_float32(&r_f32,1.0);
@@ -206,19 +203,34 @@ int main(int argc, char **argv, char **env)
         size_t pixel_index = 0;
 
         top->clk = 0;
+        top->i_awid_s = 0;
+        top->i_arid_s = 0;
+        top->i_wid_s = 0;
 
         // ----------
 
         reset(top);
-        memory_clear(top);
         register_setup(top);
-        set_triangle2(top);
+        draw_triangle(top,
+            95.0f, 400.0f, 1.0f, 0.0f, 0.0f,
+            420.0f, 125.0f, 0.0f, 1.0f, 0.0f,
+            100.0f, 105.0f, 0.0f, 0.0f, 1.0f
+        );
+        draw_triangle(top,
+            595.0f, 400.0f, 1.0f, 0.0f, 0.0f,
+            520.0f, 25.0f, 0.0f, 1.0f, 0.0f,
+            200.0f, 5.0f, 0.0f, 0.0f, 1.0f
+        );
 
         // ----------
 
 
         while (!contextp->gotFinish() && !quit)
         {
+
+            if (top->o_int) {
+                printf("Interrupt!\n");
+            }
                 
             // Update video display
             if (was_vsync && top->o_vsync_x)
@@ -265,6 +277,9 @@ int main(int argc, char **argv, char **env)
                     {
                         switch (e.key.keysym.sym)
                         {
+                        case SDLK_F1:
+                            g_axi_master.single_write(top, PP_BASE_ADDR+0x0204, 0xf, 0x00000100);
+                            break;
                         case SDLK_F12:
                             quit = true;
                             restart_model = true;
