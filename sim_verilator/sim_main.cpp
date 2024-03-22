@@ -17,6 +17,8 @@
 
 #define PP_BASE_ADDR 0x0
 
+typedef float float32_t;
+
 const int screen_width = 1024;
 const int screen_height = 768;
 

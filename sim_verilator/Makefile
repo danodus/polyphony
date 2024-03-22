@@ -1,7 +1,7 @@
 VERILATOR = verilator
 
 LDFLAGS := -LDFLAGS "$(shell sdl2-config --libs)"
-CFLAGS := -CFLAGS "$(shell sdl2-config --cflags) -g"
+CFLAGS := -CFLAGS "--std=c++14 $(shell sdl2-config --cflags)"
 
 RTLDIR := ../rtl
 SRC := sim_main.cpp utils.cpp axi_master.cpp
